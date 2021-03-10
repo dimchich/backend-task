@@ -1,0 +1,330 @@
+openapi: 3.0.0
+
+info:
+  title: 'Task API'
+  version: '0.0.0'
+  description: 'Api docs'
+
+tags:
+- name: users
+  description: users API
+- name: bitcoin
+  description: Bitcoin API
+
+paths:
+  /bitcoin:
+    get:
+      tags:
+        - bitcoin
+      summary: Get current currency rate
+      responses:
+        200:
+          description: 'Current currency rate'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BitcoinDTO'
+    put:
+      tags:
+        - bitcoin
+      summary: Set new currency rate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBitcoinDTO'
+      responses:
+        200:
+          description: 'New currency rate'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BitcoinDTO'
+        404:
+          description: 'Not Found'
+  /users:
+    post:
+      tags:
+      - users
+      summary: Add User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDTO'
+      responses:
+        201:
+          description: 'Created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        400:
+          description: 'Bad Request'
+  /users/{id}:
+    get:
+      tags:
+      - users
+      summary: Find User By Id
+      parameters:
+      - in: path
+        name: id
+        description: User Id
+        required: true
+        schema:
+          type: integer
+      responses:
+        200:
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        400:
+          description: 'Bad Request'       
+        404:
+          description: 'Not found'
+    put:
+      tags:
+      - users
+      summary: Update User By Id
+      parameters:
+      - name: id
+        in: path
+        description: user Id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserDTO'
+      responses:
+        200:
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        400:
+          description: 'Bad Request'
+        404:
+          description: 'Not found'
+  /users/{id}/usd:
+    post:
+      tags:
+        - users
+      summary: Update usd balance of user
+      parameters:
+      - name: id
+        in: path
+        description: user Id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalanceUsdDTO'
+      responses:
+        200:
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        400:
+          description: 'Bad Request'
+        404:
+          description: 'Not found'
+  /users/{id}/bitcoins:
+    post:
+      tags:
+        - users
+      summary: Update bitcoins balance of user
+      parameters:
+      - name: id
+        in: path
+        description: user Id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalanceBitcoinDTO'
+      responses:
+        200:
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        400:
+          description: 'Bad Request'
+        404:
+          description: 'Not found'
+  /users/{id}/balance:
+    get:
+      tags:
+        - users
+      summary: Get user balance in usd including bitcoins
+      parameters:
+      - name: id
+        in: path
+        description: user Id
+        required: true
+        schema:
+          type: integer
+      responses:
+        200:
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: number
+                    format: float
+        404:
+          description: 'Not found'
+ 
+
+
+components:
+  schemas:
+    # Bitcoin
+    UpdateBitcoinDTO:
+      type: object
+      required:
+        - price
+      properties:
+        price:
+          type: number
+          format: float
+          description: New price
+    BitcoinDTO:
+      type: object
+      required:
+        - price
+        - updatedAt
+      properties:
+        price:
+          type: number
+          format: float
+          description: New price
+        updatedAt:
+          type: string
+          format: date-time
+          description: Date of last changes
+    # User
+    CreateUserDTO:
+      type: object
+      required:
+        - name
+        - username
+        - email
+      properties:
+        name:
+          type: string
+          description: Real name
+        username:
+          type: string
+          description: username
+        email:
+          type: string
+          description: Email
+    UpdateUserDTO:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          description: Real name
+        email:
+          type: string
+          description: Email
+    UserDTO:
+      type: object
+      required:
+        - id
+        - name
+        - username
+        - email
+        - bitcoinAmount
+        - usdBalance
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: number
+          format: integer
+          description: User id
+        name:
+          type: string
+          description: Real name
+        username:
+          type: string
+          description: username
+        email:
+          type: string
+          description: Email
+        bitcoinAmount:
+          type: number
+          format: float
+          description: Bitcoins balance
+        usdBalance:
+          type: number
+          format: float
+          description: USD balance
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp of creation of user
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp of last update of user
+    BalanceUsdDTO:
+      type: object
+      required:
+        - action
+        - amount
+      properties:
+        action:
+          type: string
+          enum:
+            - withdraw
+            - deposit
+          description: Action to perform
+        amount:
+          type: number
+          format: float
+          description: Amount to proceed
+    BalanceBitcoinDTO:
+      type: object
+      required:
+        - action
+        - amount
+      properties:
+        action:
+          type: string
+          enum:
+            - buy
+            - sell
+          description: Action to perform
+        amount:
+          type: number
+          format: float
+          description: Amount to proceed
